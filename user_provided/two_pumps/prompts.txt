@@ -1,0 +1,29 @@
+Write Arduino code to control two pumps independently.
+With comments in the code. Explain how and why.
+
+Use pin 9 on the Arduino board for pump 1
+Use pin 8 on the Arduino board for pump 2
+
+Both pumps begin off
+
+Allow for keyboard input (from 0 (slowest) to 100 (fastest)) to adjust speed.
+
+Create the input to be pump 1 specific, so another pump can be independently controlled.
+Create the input to be pump 2 specific, so another pump can be independently controlled.
+Create another input to send the same command to both
+
+Print statements to the console on motor name (Pump 1 on Pin 9) and speed.
+
+Parts:
+
+Alito AC/DC Adapter, Model ALT-1201, Input 100-240 VAC, Output 12VDC 1A
+
+Arduino MEGA 2560 R3 (microcontroller)
+
+1N4007 - Rectifier Diode, 1A, 1000 V
+
+IRL44N
+
+Diode (black with silver band on one side)
+
+Peritaltic pump - DC6V
