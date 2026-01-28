@@ -1,0 +1,58 @@
+Write Arduino code to control two pumps independently.
+With comments in the code. Explain how and why.
+list arduino libraries to add in the header
+as code in header of the code place date and summary of the objective of the code,hat
+Explain the hardware setup in clear, structured language, what plugs into what.
+
+
+please print system status to the console with values and units,
+time lapsed - hours : minutes : seconds
+pump speed 1, (as percentage)
+pump speed 2, (as percentage)
+humidity (as percentage humidity),
+temperature (deg C),
+target heater temperature ( deg C target)
+
+
+The pumps always operate regardless of whether the sensor is detected.
+
+The SHT30 sensor is optional — if it fails, the program just logs NAN or -1 for temperature/humidity.
+
+if the temperature sensor works, use it to control the heater. set the temperature to 40 deg C. display the target heater temperature on the line. allow the user to adjust through the serial monitor - i.e. "H 50" makes the target temperature 50. explain the wiring with a mofset and diode in the header, similar to the pumps
+
+Use pin 9 on the Arduino board for pump 1
+Use pin 8 on the Arduino board for pump 2
+
+Both pumps begin off
+
+Allow for keyboard input (from 0 (slowest) to 100 (fastest)) to adjust speed.
+
+Create the input to be pump 1 specific, so another pump can be independently controlled.
+Create the input to be pump 2 specific, so another pump can be independently controlled.
+Create another input to send the same command to both
+
+Print statements to the console on motor name (Pump 1 on Pin 9) and speed.
+
+Parts:
+
+Alito AC/DC Adapter, Model ALT-1201, Input 100-240 VAC, Output 12VDC 1A
+
+Arduino MEGA 2560 R3 (microcontroller)
+
+1N4007 - Rectifier Diode, 1A, 1000 V
+
+IRL44N
+
+Diode (black with silver band on one side)
+
+Peritaltic pump - DC6V
+
+SHT30 Temperature And Humidity Sensor (https://www.adafruit.com/product/5064)
+The cable has four wires:
+Red = VCC (2.15-5VDC),
+Black = Ground,
+Yellow = I2C Clock / SCL,
+White = I2C Data / SDA.
+
+
+Heating Pad - Electric Heating Pad - 10cm x 5cm, https://www.adafruit.com/product/1481
