@@ -1,0 +1,30 @@
+
+
+
+Write Arduino code to turn on the pump.
+With comments in the code.
+Use pin 9 on the Arduino board for pump 1
+Begin with medium speed
+
+Parts:
+
+Alito AC/DC Adapter, Model ALT-1201, Input 100-240 VAC, Output 12VDC 1A
+
+Arduino MEGA 2560 R3 (microcontroller)
+
+1N4007 - Rectifier Diode, 1A, 1000 V
+
+IRL44N
+
+Diode (black with silver band on one side)
+
+Peritaltic pump - DC6V
+
+
+Water Flow Sensor (http://adafru.it/5066 ), Model Y5-S201C
+
+Heating Pad - Electric Heating Pad - 10cm x 5cm, https://www.adafruit.com/product/1481
+
+
+
+SHT30 Temperature And Humidity Sensor (https://www.adafruit.com/product/5064)
