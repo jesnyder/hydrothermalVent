@@ -12,6 +12,7 @@ pump speed 2, (as percentage)
 humidity (as percentage humidity),
 temperature (deg C),
 target heater temperature ( deg C target)
+Heater On or Off,
 
 
 The pumps always operate regardless of whether the sensor is detected.
