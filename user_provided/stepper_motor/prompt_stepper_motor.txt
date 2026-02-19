@@ -1,0 +1,24 @@
+Take your time. Accuracy more important than speed.
+Do not hallucinate.
+Fully comment the code so a novice programmer can understand
+Use print statement to the terminal to update progress
+
+
+Write Arduino code to move a stepper motor
+In the header of the Arduino code, include the following:
+the date the code was produced
+the objective of the code as a sentence
+a description of the wiring, including the stepper motor to the microstep driver. refer to the colors of the stepper motor wires.
+
+These are the hardware
+Microcontroller: Arduino Mega 2560 R3
+Microstep driver: DM542 CNC Digital Microstep https://www.amazon.com/Digital-Microstep-Stepper-Controller-2-phase/dp/B08GCFNQF2/ref=asc_df_B08GCFNQF2?tag=bingshoppinga-20&linkCode=df0&hvadid=79989604220852&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=85950&hvtargid=pla-4583589123377656&psc=1
+Stepper Motor: Nema 17 Bipolar  Stepperonline RoHS P/N: 17HS19-2004S1 https://www.omc-stepperonline.com/nema-17-bipolar-59ncm-84oz-in-2a-42x48mm-4-wires-w-1m-cable-connector-17hs19-2004s1
+Power Supply:
+24 V option Alito AC/DC adapter Model No. ALT 2402 Input AC 100V-240 V, 50/60 H, Output: 24 V, 2A, 48 W 
+12 V option ALITO AC/DS Adapter Model ALT-1201 Input: 100-240 VAC 50/60 H, Output: DC12V, 1A, 12W
+
+Allow the speed of the motor to be controlled through the Arduino Serial Monitor
+with a command, such as "M20" to set the motor speed to 20% of full speed.
+Write the code so the motor begins off. And display direction for how to control motor speed through the Arduino Serial Monitor
+Add acceleration for a smooth ramp up.
