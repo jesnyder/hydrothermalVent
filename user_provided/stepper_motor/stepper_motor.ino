@@ -1,34 +1,45 @@
 /* 
   Date: 2026-02-17
-  Objective: Control a NEMA 17 stepper motor with variable speed and direction via Serial Monitor
+  Objective: Control a NEMA 17 stepper motor with variable speed, direction, and endstop safety via Serial Monitor
   Wiring:
     - Arduino Pin 7 -> DM542 PUL-
     - Arduino Pin 6 -> DM542 DIR-
     - PUL+ and DIR+ -> Arduino 5V
     - ENA disconnected or ENA- tied LOW (GND)
     - DM542 A+/A-, B+/B- -> stepper motor coils
+      Stepper motor wire colors:
+        - A+ : Black
+        - A- : Green
+        - B+ : Red
+        - B- : Blue
     - DM542 V+/V- -> 24V DC power supply
+    - Limit Switch (Endstop):
+        RED wire - COM -> Arduino GND
+        BLACK wire - NC  -> Arduino Pin 9
     - DIP switches: SW1=ON, SW2=OFF, SW3=ON (2A); SW4=ON, SW5=ON, SW6=OFF, SW7=OFF (1/8 microstep); SW8=OFF
 */
 
-const int stepPin = 7;  // PUL-
-const int dirPin  = 6;  // DIR-
+const int stepPin = 7;       // PUL- (step pulse output)
+const int dirPin  = 6;       // DIR- (direction control)
+const int endstopPin = 9;    // Endstop input (black wire, NC)
 
-// Stepper control variables
-int motorSpeedPercent = 0;     // Speed 0-100%
-bool directionForward = true;   // Direction
-float currentDelay = 2000;      // Current microseconds per step
-float targetDelay = 2000;       // Target delay for smooth acceleration
-const float minDelay = 500;     // Fastest speed
-const float maxDelay = 4000;    // Slowest speed
-const float accelStep = 5;      // Microseconds per loop for acceleration
+int motorSpeedPercent = 0;    // Motor speed 0-100%
+bool directionForward = true; // Motor direction
+float currentDelay = 2000;    // Current step delay in microseconds
+float targetDelay = 2000;     // Target delay for smooth acceleration
+const float minDelay = 500;   // Minimum delay (fastest speed)
+const float maxDelay = 4000;  // Maximum delay (slowest speed)
+const float accelStep = 5;    // Microseconds per loop for smooth ramping
 
 void setup() {
-  Serial.begin(9600);            // Start Serial Monitor
-  pinMode(stepPin, OUTPUT);      // Step pin
-  pinMode(dirPin, OUTPUT);       // Direction pin
-  digitalWrite(dirPin, HIGH);    // Forward
+  Serial.begin(9600);                  // Start Serial Monitor
+  pinMode(stepPin, OUTPUT);            // Step pin output
+  pinMode(dirPin, OUTPUT);             // Direction pin output
+  pinMode(endstopPin, INPUT_PULLUP);   // Endstop input with internal pullup (NC switch)
 
+  digitalWrite(dirPin, HIGH);          // Start with forward direction
+
+  // Serial instructions
   Serial.println("Stepper Motor Controller Initialized.");
   Serial.println("Commands:");
   Serial.println("  MXX -> Set speed (0-100%)");
@@ -38,11 +49,11 @@ void setup() {
 }
 
 void loop() {
-  // --- Serial commands ---
+  // --- Serial command handling ---
   if (Serial.available() > 0) {
     String input = Serial.readStringUntil('\n');
     input.trim();
-    input.toUpperCase();  // Make commands case-insensitive
+    input.toUpperCase();  // Case-insensitive commands
 
     if (input.startsWith("M")) {
       int speed = input.substring(1).toInt();
@@ -50,7 +61,7 @@ void loop() {
       if (speed > 100) speed = 100;
       motorSpeedPercent = speed;
 
-      // Map speed % to step delay (0% = slowest, 100% = fastest)
+      // Map speed percent to microseconds per step
       targetDelay = map(motorSpeedPercent, 0, 100, maxDelay, minDelay);
 
       Serial.print("Motor speed set to ");
@@ -69,6 +80,18 @@ void loop() {
     }
   }
 
+  // --- Endstop check ---
+  if (digitalRead(endstopPin) == LOW) { // NC switch pressed
+    motorSpeedPercent = 0;              // Stop motor immediately
+    Serial.println("Endstop triggered! Motor stopped and reversing.");
+
+    // Reverse direction
+    directionForward = !directionForward;
+    digitalWrite(dirPin, directionForward ? HIGH : LOW);
+
+    delay(200); // debounce to prevent double-trigger
+  }
+
   // --- Smooth acceleration/deceleration ---
   if (currentDelay < targetDelay) {
     currentDelay += accelStep;        // Slow down smoothly
@@ -79,13 +102,12 @@ void loop() {
   }
 
   // --- Step motor if speed > 0 ---
-  if (motorSpeedPercent > 0) {
+  if (motorSpeedPercent > 0) {      
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(currentDelay);
     digitalWrite(stepPin, LOW);
     delayMicroseconds(currentDelay);
   } else {
-    // Motor OFF, short delay to avoid CPU overload
-    delay(100);
+    delay(100); // Motor off, short delay to reduce CPU usage
   }
 }
