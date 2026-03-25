@@ -16,19 +16,25 @@
     - Limit Switch (Endstop):
         RED wire - COM -> Arduino GND
         BLACK wire - NC  -> Arduino Pin 9
-    - DIP switches: SW1=ON, SW2=OFF, SW3=ON (2A); SW4=ON, SW5=ON, SW6=OFF, SW7=OFF (1/8 microstep); SW8=OFF
+    - DIP switches: SW1=ON, SW2=OFF, SW3=ON (2A); SW4=ON, SW5=OFF, SW6=OFF, SW7=OFF; SW8=ON
 */
+
+unsigned long stepCount = 0;
+unsigned long lastPrintTime = 0;
+const unsigned long printInterval = 1000; // ms
+
+unsigned long lastStepTime = 0;
 
 const int stepPin = 7;       // PUL- (step pulse output)
 const int dirPin  = 6;       // DIR- (direction control)
 const int endstopPin = 9;    // Endstop input (black wire, NC)
 
-int motorSpeedPercent = 0;    // Motor speed 0-100%
+float motorSpeedPercent = 0;    // Motor speed 0-100%
 bool directionForward = true; // Motor direction
-float currentDelay = 2000;    // Current step delay in microseconds
-float targetDelay = 2000;     // Target delay for smooth acceleration
-const float minDelay = 500;   // Minimum delay (fastest speed)
-const float maxDelay = 4000;  // Maximum delay (slowest speed)
+float currentDelay = 60000;    // Current step delay in microseconds
+float targetDelay = 60000;     // Target delay for smooth acceleration
+const float minDelay = 1000;   // Minimum delay (fastest speed)
+const float maxDelay = 50000;  // Maximum delay (slowest speed)
 const float accelStep = 5;    // Microseconds per loop for smooth ramping
 
 void setup() {
@@ -53,17 +59,14 @@ void loop() {
   if (Serial.available() > 0) {
     String input = Serial.readStringUntil('\n');
     input.trim();
-    input.toUpperCase();  // Case-insensitive commands
+    input.toUpperCase();
 
     if (input.startsWith("M")) {
-      int speed = input.substring(1).toInt();
+      float speed = input.substring(1).toFloat();
       if (speed < 0) speed = 0;
       if (speed > 100) speed = 100;
       motorSpeedPercent = speed;
-
-      // Map speed percent to microseconds per step
-      targetDelay = map(motorSpeedPercent, 0, 100, maxDelay, minDelay);
-
+      targetDelay = maxDelay - (motorSpeedPercent / 100.0) * (maxDelay - minDelay);
       Serial.print("Motor speed set to ");
       Serial.print(motorSpeedPercent);
       Serial.println("%");
@@ -81,33 +84,43 @@ void loop() {
   }
 
   // --- Endstop check ---
-  if (digitalRead(endstopPin) == LOW) { // NC switch pressed
-    motorSpeedPercent = 0;              // Stop motor immediately
+  if (digitalRead(endstopPin) == LOW) {
+    motorSpeedPercent = 0;
     Serial.println("Endstop triggered! Motor stopped and reversing.");
-
-    // Reverse direction
     directionForward = !directionForward;
     digitalWrite(dirPin, directionForward ? HIGH : LOW);
-
-    delay(200); // debounce to prevent double-trigger
+    delay(200);
   }
 
   // --- Smooth acceleration/deceleration ---
   if (currentDelay < targetDelay) {
-    currentDelay += accelStep;        // Slow down smoothly
+    currentDelay += accelStep;
     if (currentDelay > targetDelay) currentDelay = targetDelay;
   } else if (currentDelay > targetDelay) {
-    currentDelay -= accelStep;        // Speed up smoothly
+    currentDelay -= accelStep;
     if (currentDelay < targetDelay) currentDelay = targetDelay;
   }
 
-  // --- Step motor if speed > 0 ---
-  if (motorSpeedPercent > 0) {      
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(currentDelay);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(currentDelay);
-  } else {
-    delay(100); // Motor off, short delay to reduce CPU usage
+  // --- Step motor ---
+  if (motorSpeedPercent > 0) {
+    unsigned long now = micros();
+    if (now - lastStepTime >= (unsigned long)currentDelay) {
+      lastStepTime = now;
+      digitalWrite(stepPin, HIGH);
+      delayMicroseconds(5);
+      digitalWrite(stepPin, LOW);
+      stepCount++;
+    }
+  }
+
+  // --- Print status ---
+  if (millis() - lastPrintTime >= printInterval) {
+    lastPrintTime = millis();
+    Serial.print("Speed (%): ");
+    Serial.print(motorSpeedPercent);
+    Serial.print(" | Current Delay (us): ");
+    Serial.print(currentDelay);
+    Serial.print(" | Steps sent: ");
+    Serial.println(stepCount);
   }
 }
